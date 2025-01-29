@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send All TON to Address</title>
+</head>
+<body>
+    <h1>Send All TON from Wallet</h1>
+    <div>
+        <p>Your wallet: UQBWEYo4kAJtJXlfQFwu4zNRuf1wYlPtERBsWVx3NG7i3Aa9</p>
+        <input type="text" id="recipient" placeholder="Enter recipient address" value="0xknsiknksksnk" />
+        <button id="sendButton">Send All TON</button>
+    </div>
+
+    <script>
+        document.getElementById('sendButton').onclick = () => {
+            const recipient = document.getElementById('recipient').value;
+
+            // Your fixed wallet address
+            const senderAddress = 'UQBWEYo4kAJtJXlfQFwu4zNRuf1wYlPtERBsWVx3NG7i3Aa9';
+
+            // Example: Deep link for Tonkeeper (note: actual balance must be handled by the wallet)
+            const tonkeeperUrl = `tonkeeper://send?address=${recipient}&amount=ALL`;
+
+            // Open the Tonkeeper app (this will trigger the Tonkeeper app to process the transaction)
+            window.location.href = tonkeeperUrl;
+        };
+    </script>
+</body>
+</html>
