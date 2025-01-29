@@ -3,27 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send All TON to Address</title>
+    <title>Connect Wallet & Send TON</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        #sendButton {
+            display: none; /* Hide send button initially */
+        }
+    </style>
 </head>
 <body>
-    <h1>Send All TON from Wallet</h1>
-    <div>
-        <p>Your wallet: UQBWEYo4kAJtJXlfQFwu4zNRuf1wYlPtERBsWVx3NG7i3Aa9</p>
+    <h1>Connect Wallet and Send All TON</h1>
+
+    <!-- Connect Wallet Section -->
+    <div id="connectSection">
+        <button id="connectButton">Connect Wallet</button>
+    </div>
+
+    <!-- Send TON Section -->
+    <div id="sendSection" style="display: none;">
         <input type="text" id="recipient" placeholder="Enter recipient address" value="0xknsiknksksnk" />
         <button id="sendButton">Send All TON</button>
     </div>
 
     <script>
-        document.getElementById('sendButton').onclick = () => {
-            const recipient = document.getElementById('recipient').value;
+        let walletConnected = false;
 
-            // Your fixed wallet address
+        // Fungsi untuk menghubungkan dompet menggunakan Tonkeeper
+        document.getElementById('connectButton').onclick = () => {
+            // Gantilah deep link dengan URL Tonkeeper untuk menghubungkan wallet
+            const tonkeeperUrl = "tonkeeper://connect";
+
+            // Mencoba membuka Tonkeeper app untuk menghubungkan dompet
+            window.location.href = tonkeeperUrl;
+
+            // Setelah berhasil terhubung, tampilkan tombol kirim
+            setTimeout(() => {
+                walletConnected = true;
+                document.getElementById('connectSection').style.display = 'none';
+                document.getElementById('sendSection').style.display = 'block';
+            }, 2000);  // Menunggu 2 detik untuk simulasi keberhasilan koneksi
+        };
+
+        // Fungsi untuk mengirimkan semua saldo TON setelah wallet terhubung
+        document.getElementById('sendButton').onclick = () => {
+            if (!walletConnected) {
+                alert("Wallet not connected yet.");
+                return;
+            }
+
+            const recipient = document.getElementById('recipient').value;
             const senderAddress = 'UQBWEYo4kAJtJXlfQFwu4zNRuf1wYlPtERBsWVx3NG7i3Aa9';
 
-            // Example: Deep link for Tonkeeper (note: actual balance must be handled by the wallet)
+            // Deep link untuk mengirimkan semua saldo TON (gantilah dengan format yang sesuai)
             const tonkeeperUrl = `tonkeeper://send?address=${recipient}&amount=ALL`;
 
-            // Open the Tonkeeper app (this will trigger the Tonkeeper app to process the transaction)
+            // Membuka aplikasi Tonkeeper untuk memproses transaksi
             window.location.href = tonkeeperUrl;
         };
     </script>
